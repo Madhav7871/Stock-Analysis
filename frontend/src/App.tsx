@@ -8,16 +8,17 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import {
-  Search,
-  TrendingUp,
-  TrendingDown,
-  LayoutDashboard,
-  Briefcase,
-  LineChart,
-  Settings,
+import { 
+  Search, 
+  TrendingUp, 
+  TrendingDown, 
+  LayoutDashboard, 
   BrainCircuit,
   AlertCircle,
+  LogOut,
+  Mail,
+  Lock,
+  User
 } from "lucide-react";
 import "./App.css";
 
@@ -28,6 +29,10 @@ interface StockData {
 }
 
 function App() {
+  // Navigation State
+  const [currentView, setCurrentView] = useState<"login" | "signup" | "dashboard">("login");
+
+  // Dashboard State
   const [data, setData] = useState<StockData[]>([]);
   const [ticker, setTicker] = useState("AAPL");
   const [searchInput, setSearchInput] = useState("AAPL");
@@ -46,11 +51,11 @@ function App() {
     setError(null);
     try {
       const response = await fetch(`http://127.0.0.1:8000/api/stock/${symbol}`);
-
+      
       if (!response.ok) {
         throw new Error("Failed to fetch stock data. Check the ticker symbol.");
       }
-
+      
       const result = await response.json();
       const stockData = result.data;
 
@@ -78,9 +83,12 @@ function App() {
     setLoading(false);
   };
 
+  // Only fetch data if we are on the dashboard
   useEffect(() => {
-    fetchStockData(ticker);
-  }, [ticker]);
+    if (currentView === "dashboard") {
+      fetchStockData(ticker);
+    }
+  }, [currentView, ticker]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,44 +97,117 @@ function App() {
     }
   };
 
+  const handleAuthSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real app, you would verify credentials with your Python backend here.
+    // For now, we instantly log the user in.
+    setCurrentView("dashboard");
+  };
+
+  // --- RENDER LOGIN VIEW ---
+  if (currentView === "login") {
+    return (
+      <div className="auth-layout">
+        <div className="auth-card">
+          <div className="auth-logo">
+            <TrendingUp className="logo-icon" size={32} />
+            StockRuit
+          </div>
+          <h2>Welcome Back</h2>
+          <p>Enter your details to access your dashboard.</p>
+          
+          <form onSubmit={handleAuthSubmit} className="auth-form">
+            <div className="input-group">
+              <Mail size={18} className="input-icon" />
+              <input type="email" placeholder="Email address" required />
+            </div>
+            <div className="input-group">
+              <Lock size={18} className="input-icon" />
+              <input type="password" placeholder="Password" required />
+            </div>
+            <button type="submit" className="auth-button">Sign In</button>
+          </form>
+          
+          <div className="auth-footer">
+            Don't have an account? <span onClick={() => setCurrentView("signup")}>Sign up</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- RENDER SIGNUP VIEW ---
+  if (currentView === "signup") {
+    return (
+      <div className="auth-layout">
+        <div className="auth-card">
+          <div className="auth-logo">
+            <TrendingUp className="logo-icon" size={32} />
+            StockRuit
+          </div>
+          <h2>Create an Account</h2>
+          <p>Start analyzing stocks with AI today.</p>
+          
+          <form onSubmit={handleAuthSubmit} className="auth-form">
+            <div className="input-group">
+              <User size={18} className="input-icon" />
+              <input type="text" placeholder="Full Name" required />
+            </div>
+            <div className="input-group">
+              <Mail size={18} className="input-icon" />
+              <input type="email" placeholder="Email address" required />
+            </div>
+            <div className="input-group">
+              <Lock size={18} className="input-icon" />
+              <input type="password" placeholder="Create Password" required />
+            </div>
+            <button type="submit" className="auth-button">Create Account</button>
+          </form>
+          
+          <div className="auth-footer">
+            Already have an account? <span onClick={() => setCurrentView("login")}>Log in</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const isPositive = priceChange >= 0;
 
+  // --- RENDER DASHBOARD VIEW ---
   return (
     <div className="dashboard-layout">
       {/* SIDEBAR NAVIGATION */}
       <aside className="sidebar">
-        <div className="sidebar-logo">
-          <TrendingUp className="logo-icon" />
-          StockRuit
+        <div>
+          <div className="sidebar-logo">
+            <TrendingUp className="logo-icon" />
+            StockRuit
+          </div>
+          <ul className="sidebar-menu">
+            <li className="active"><LayoutDashboard size={18} /> Dashboard</li>
+            {/* Removed the extra placeholder links here */}
+          </ul>
         </div>
-        <ul className="sidebar-menu">
-          <li className="active">
-            <LayoutDashboard size={18} /> Dashboard
-          </li>
-          <li>
-            <Briefcase size={18} /> Portfolios
-          </li>
-          <li>
-            <LineChart size={18} /> Predictions
-          </li>
-          <li>
-            <Settings size={18} /> Settings
-          </li>
-        </ul>
+        
+        {/* Logout Button at bottom of sidebar */}
+        <div className="sidebar-bottom">
+          <ul className="sidebar-menu">
+            <li className="logout-btn" onClick={() => setCurrentView("login")}>
+              <LogOut size={18} /> Log Out
+            </li>
+          </ul>
+        </div>
       </aside>
 
       {/* MAIN CONTENT AREA */}
       <main className="main-content">
-        {/* Top Header Bar */}
         <div className="header-bar">
           <div className="header-title">
             <h1>Analysis Command Center</h1>
-            <p>
-              Welcome back. Your AI processed data for <strong>{ticker}</strong>
-              .
-            </p>
+            <p>Welcome back. Your AI processed data for <strong>{ticker}</strong>.</p>
           </div>
-
+          
           <form className="search-controls" onSubmit={handleSearch}>
             <div className="search-input-wrapper">
               <Search size={16} className="search-icon" />
@@ -143,120 +224,76 @@ function App() {
           </form>
         </div>
 
-        {/* Error Message */}
         {error && (
-          <div
-            className="error-banner"
-            style={{
-              backgroundColor: "#fee2e2",
-              color: "#991b1b",
-              padding: "12px",
-              borderRadius: "8px",
-              marginBottom: "20px",
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-            }}
-          >
+          <div className="error-banner" style={{ backgroundColor: '#fee2e2', color: '#991b1b', padding: '12px', borderRadius: '8px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <AlertCircle size={18} />
             <span>{error}</span>
           </div>
         )}
 
-        {/* 4 Metric Cards */}
         <div className="metrics-grid">
           <div className="dashboard-card">
             <p className="metric-title">Latest Close</p>
             <h2 className="metric-value">${latestPrice.toFixed(2)}</h2>
           </div>
-
+          
           <div className="dashboard-card">
             <p className="metric-title">Daily Change</p>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <h2
-                className="metric-value"
-                style={{ color: isPositive ? "#10b981" : "#ef4444" }}
-              >
-                {isPositive ? "+" : ""}
-                {priceChange.toFixed(2)}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h2 className="metric-value" style={{ color: isPositive ? "#10b981" : "#ef4444" }}>
+                {isPositive ? "+" : ""}{priceChange.toFixed(2)}
               </h2>
-              <span
-                style={{
-                  backgroundColor: isPositive
-                    ? "rgba(16, 185, 129, 0.1)"
-                    : "rgba(239, 68, 68, 0.1)",
-                  color: isPositive ? "#10b981" : "#ef4444",
-                  padding: "4px 8px",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  fontWeight: "bold",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                }}
-              >
-                {isPositive ? (
-                  <TrendingUp size={14} />
-                ) : (
-                  <TrendingDown size={14} />
-                )}
+              <span style={{ 
+                backgroundColor: isPositive ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                color: isPositive ? "#10b981" : "#ef4444",
+                padding: '4px 8px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                 {Math.abs(percentChange).toFixed(2)}%
               </span>
             </div>
           </div>
-
+          
           <div className="dashboard-card">
             <p className="metric-title">Trading Volume</p>
             <h2 className="metric-value">
               {(latestVolume / 1000000).toFixed(2)}M
             </h2>
           </div>
-
+          
           <div className="dashboard-card">
             <p className="metric-title">AI Sentiment</p>
-            <h2
-              className="metric-value"
-              style={{ color: "var(--primary-blue)" }}
-            >
+            <h2 className="metric-value" style={{ color: "var(--primary-blue)" }}>
               78% Bullish
             </h2>
           </div>
         </div>
 
-        {/* 2 Bottom Panels */}
         <div className="panels-grid">
           <div className="dashboard-card chart-card">
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "15px",
-              }}
-            >
-              <p className="metric-title" style={{ margin: 0 }}>
-                Market Distribution
-              </p>
-
-              {/* Timeframe Selector UI */}
-              <div
-                className="timeframe-selector"
-                style={{ display: "flex", gap: "5px" }}
-              >
-                {["1W", "1M", "3M", "1Y"].map((tf) => (
-                  <button
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <p className="metric-title" style={{ margin: 0 }}>Market Distribution</p>
+              
+              <div className="timeframe-selector" style={{ display: 'flex', gap: '5px' }}>
+                {['1W', '1M', '3M', '1Y'].map((tf) => (
+                  <button 
                     key={tf}
                     onClick={() => setTimeframe(tf)}
                     style={{
-                      padding: "4px 10px",
-                      borderRadius: "4px",
-                      border: "none",
-                      backgroundColor:
-                        timeframe === tf ? "#4318FF" : "transparent",
-                      color: timeframe === tf ? "white" : "#64748b",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                      fontWeight: "bold",
+                      padding: '4px 10px',
+                      borderRadius: '4px',
+                      border: 'none',
+                      backgroundColor: timeframe === tf ? '#4318FF' : 'transparent',
+                      color: timeframe === tf ? 'white' : '#64748b',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      fontWeight: 'bold'
                     }}
                   >
                     {tf}
@@ -265,81 +302,28 @@ function App() {
               </div>
             </div>
 
-            <div className="chart-container" style={{ height: "300px" }}>
+            <div className="chart-container" style={{ height: '300px' }}>
               {loading ? (
-                <div
-                  style={{
-                    display: "flex",
-                    height: "100%",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    color: "#64748b",
-                  }}
-                >
+                <div style={{ display: 'flex', height: '100%', justifyContent: 'center', alignItems: 'center', color: '#64748b' }}>
                   Processing market data...
                 </div>
               ) : data.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={data}
-                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                  >
+                  <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
-                      <linearGradient
-                        id="colorClose"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#4318FF"
-                          stopOpacity={0.4}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="#4318FF"
-                          stopOpacity={0}
-                        />
+                      <linearGradient id="colorClose" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#4318FF" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="#4318FF" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      stroke="#f1f5f9"
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis dataKey="Date" tick={{ fontSize: 12, fill: "#94a3b8" }} tickLine={false} axisLine={false} minTickGap={40} />
+                    <YAxis domain={["auto", "auto"]} tick={{ fontSize: 12, fill: "#94a3b8" }} tickLine={false} axisLine={false} tickFormatter={(value) => `$${value}`} />
+                    <Tooltip 
+                      contentStyle={{ borderRadius: "10px", border: "none", boxShadow: "0 10px 25px rgba(0,0,0,0.1)", fontWeight: 'bold' }}
+                      itemStyle={{ color: '#4318FF' }}
                     />
-                    <XAxis
-                      dataKey="Date"
-                      tick={{ fontSize: 12, fill: "#94a3b8" }}
-                      tickLine={false}
-                      axisLine={false}
-                      minTickGap={40}
-                    />
-                    <YAxis
-                      domain={["auto", "auto"]}
-                      tick={{ fontSize: 12, fill: "#94a3b8" }}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(value) => `$${value}`}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        borderRadius: "10px",
-                        border: "none",
-                        boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-                        fontWeight: "bold",
-                      }}
-                      itemStyle={{ color: "#4318FF" }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="Close"
-                      stroke="#4318FF"
-                      strokeWidth={3}
-                      fillOpacity={1}
-                      fill="url(#colorClose)"
-                    />
+                    <Area type="monotone" dataKey="Close" stroke="#4318FF" strokeWidth={3} fillOpacity={1} fill="url(#colorClose)" />
                   </AreaChart>
                 </ResponsiveContainer>
               ) : null}
@@ -348,37 +332,14 @@ function App() {
 
           <div className="dashboard-card ai-panel">
             <p className="metric-title">AI Intelligence Report</p>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                margin: "15px 0",
-              }}
-            >
-              <div
-                style={{
-                  backgroundColor: "#e0e7ff",
-                  padding: "10px",
-                  borderRadius: "50%",
-                  color: "#4318FF",
-                }}
-              >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '15px 0' }}>
+              <div style={{ backgroundColor: '#e0e7ff', padding: '10px', borderRadius: '50%', color: '#4318FF' }}>
                 <BrainCircuit size={24} />
               </div>
               <h3 style={{ margin: 0, fontSize: "20px" }}>Model is Active</h3>
             </div>
-            <p
-              style={{
-                color: "#64748b",
-                fontSize: "14px",
-                lineHeight: "1.6",
-                margin: 0,
-              }}
-            >
-              The structural layout is complete and beautifully aligned. Data
-              pipeline to Python backend is verified and stable. Currently
-              tracking real-time volatility for <strong>{ticker}</strong>.
+            <p style={{ color: "#64748b", fontSize: "14px", lineHeight: "1.6", margin: 0 }}>
+              The structural layout is complete and beautifully aligned. Data pipeline to Python backend is verified and stable. Currently tracking real-time volatility for <strong>{ticker}</strong>.
             </p>
           </div>
         </div>

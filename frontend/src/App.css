@@ -1,232 +1,134 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-
-:root {
-  --bg-app: #f4f7fe;
-  --bg-surface: #ffffff;
-  --primary-blue: #4318ff;
-  --text-dark: #1e293b;
-  --text-muted: #64748b;
+/* --- SIDEBAR UPDATES --- */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Pushes bottom items down */
 }
 
-body {
-  margin: 0;
-  padding: 0;
+.sidebar-bottom {
+  margin-top: auto;
+  margin-bottom: 20px;
+}
+
+.sidebar-menu li.logout-btn {
+  color: #ef4444; /* Red color for logout */
+}
+
+.sidebar-menu li.logout-btn:hover {
+  background-color: #fee2e2;
+}
+
+/* --- AUTHENTICATION SCREENS (LOGIN/SIGNUP) --- */
+.auth-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100vw;
   background-color: var(--bg-app);
-  font-family: "Inter", sans-serif;
+}
+
+.auth-card {
+  background-color: var(--bg-surface);
+  padding: 50px 40px;
+  border-radius: 24px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+
+.auth-logo {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--primary-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 30px;
+  letter-spacing: -0.5px;
+}
+
+.auth-card h2 {
+  font-size: 24px;
+  margin: 0 0 10px 0;
   color: var(--text-dark);
 }
 
-.dashboard-layout {
-  display: flex;
-  width: 100vw;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
+.auth-card p {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 0 0 30px 0;
 }
 
-/* --- SIDEBAR --- */
-.sidebar {
-  width: 260px;
-  background-color: var(--bg-surface);
-  padding: 30px 0;
-  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.03);
-  z-index: 10;
-}
-
-.sidebar-logo {
-  font-size: 26px;
-  font-weight: 800;
-  padding: 0 30px;
-  margin-bottom: 50px;
-  color: var(--primary-blue);
-  letter-spacing: -0.5px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.sidebar-menu {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.auth-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 15px;
 }
 
-.sidebar-menu li {
-  padding: 12px 30px;
-  color: var(--text-muted);
-  font-weight: 600;
-  cursor: pointer;
+.input-group {
   display: flex;
   align-items: center;
-  gap: 15px;
-  margin: 0 15px;
-  border-radius: 10px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0 15px;
   transition: all 0.2s ease;
 }
 
-.sidebar-menu li.active {
-  background-color: var(--primary-blue);
-  color: #ffffff;
-}
-
-.sidebar-menu li:hover:not(.active) {
-  background-color: #f1f5f9;
-  color: var(--primary-blue);
-}
-
-/* --- MAIN CONTENT --- */
-.main-content {
-  flex: 1;
-  padding: 40px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  text-align: left; /* Fixes text centering issue from root */
-}
-
-/* --- HEADER BAR --- */
-.header-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: var(--bg-surface);
-  padding: 20px 30px;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-}
-
-.header-title h1 {
-  margin: 0 0 4px 0;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-dark);
-}
-
-.header-title p {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 14px;
-}
-
-/* --- SEARCH CONTROLS (Updated for new React Code) --- */
-.search-controls {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-}
-
-.search-input-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background-color: #ffffff;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  padding: 0 16px;
-  transition: border-color 0.2s ease;
-}
-
-.search-input-wrapper:focus-within {
+.input-group:focus-within {
   border-color: var(--primary-blue);
   box-shadow: 0 0 0 3px rgba(67, 24, 255, 0.1);
+  background-color: #ffffff;
 }
 
-.search-icon {
-  color: var(--text-muted);
+.input-icon {
+  color: #94a3b8;
 }
 
-.search-input-wrapper input {
-  padding: 12px 0;
+.input-group input {
+  flex: 1;
+  padding: 15px 10px;
   border: none;
   background: transparent;
-  color: var(--text-dark);
-  font-size: 14px;
-  font-weight: 600;
   outline: none;
-  width: 180px;
+  font-size: 14px;
+  color: var(--text-dark);
 }
 
-.search-controls button {
-  padding: 12px 24px;
-  border-radius: 10px;
-  border: none;
+.auth-button {
   background-color: var(--primary-blue);
-  color: #ffffff;
-  font-size: 14px;
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 12px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 10px rgba(67, 24, 255, 0.2);
-  transition:
-    transform 0.1s,
-    box-shadow 0.1s;
+  margin-top: 10px;
+  transition: transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 4px 15px rgba(67, 24, 255, 0.25);
 }
 
-.search-controls button:active:not(:disabled) {
+.auth-button:active {
   transform: translateY(2px);
   box-shadow: none;
 }
 
-.search-controls button:disabled {
-  background-color: #94a3b8;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-/* --- METRICS GRID --- */
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 25px;
-}
-
-.dashboard-card {
-  background-color: var(--bg-surface);
-  padding: 25px;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.metric-title {
-  font-size: 12px;
-  font-weight: 700;
+.auth-footer {
+  margin-top: 30px;
+  font-size: 14px;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin: 0 0 10px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
-.metric-value {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--text-dark);
-  margin: 0;
+.auth-footer span {
+  color: var(--primary-blue);
+  font-weight: 600;
+  cursor: pointer;
 }
 
-/* --- BOTTOM PANELS --- */
-.panels-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 25px;
-}
-
-.chart-container {
-  height: 350px;
-  width: 100%;
-  margin-top: 20px;
-}
-
-/* Specific alignments for AI Panel */
-.ai-panel {
-  align-items: flex-start;
-  text-align: left;
+.auth-footer span:hover {
+  text-decoration: underline;
 }
