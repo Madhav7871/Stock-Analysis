@@ -10,15 +10,31 @@ interface StockData {
   Volume: number;
 }
 
+// MOCK DATA for the Dropdown Menu
+const popularStocks = [
+  { symbol: "AAPL", name: "Apple Inc.", trend: "up", change: "+1.2%" },
+  { symbol: "NVDA", name: "NVIDIA Corp.", trend: "up", change: "+3.4%" },
+  { symbol: "TSLA", name: "Tesla Inc.", trend: "down", change: "-2.1%" },
+  { symbol: "MSFT", name: "Microsoft", trend: "up", change: "+0.8%" },
+  { symbol: "AMZN", name: "Amazon", trend: "up", change: "+1.1%" },
+  { symbol: "GOOGL", name: "Alphabet", trend: "down", change: "-0.5%" }
+];
+
 export default function Dashboard() {
   const navigate = useNavigate();
+  
+  // States
   const [data, setData] = useState<StockData[]>([]);
   const [ticker, setTicker] = useState("AAPL");
   const [searchInput, setSearchInput] = useState("AAPL");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [timeframe, setTimeframe] = useState("1M");
+  
+  // Dropdown state
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  // Metrics
   const [latestPrice, setLatestPrice] = useState<number>(0);
   const [latestVolume, setLatestVolume] = useState<number>(0);
   const [priceChange, setPriceChange] = useState<number>(0);
@@ -53,17 +69,20 @@ export default function Dashboard() {
     setLoading(false);
   };
 
+  // Fetch data automatically when ticker changes
   useEffect(() => {
     fetchStockData(ticker);
   }, [ticker]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchInput.trim()) setTicker(searchInput.toUpperCase());
+    if (searchInput.trim()) {
+      setTicker(searchInput.toUpperCase());
+      setIsDropdownOpen(false); // Close dropdown on search
+    }
   };
 
   const isPositive = priceChange >= 0;
-  // DYNAMIC COLORS: Green for profit, Red for loss
   const chartColor = isPositive ? "#10b981" : "#ef4444"; 
 
   return (
@@ -72,7 +91,7 @@ export default function Dashboard() {
       <aside className="sidebar">
         <div>
           <div className="sidebar-logo">
-            <TrendingUp className="logo-icon" /> Stock Analyser
+            <TrendingUp className="logo-icon" /> StockRuit
           </div>
           <ul className="sidebar-menu">
             <li className="active"><LayoutDashboard size={18} /> Dashboard</li>
@@ -94,13 +113,51 @@ export default function Dashboard() {
             <h1>Analysis Command Center</h1>
             <p>Welcome back. Your AI processed data for <strong>{ticker}</strong>.</p>
           </div>
-          <form className="search-controls" onSubmit={handleSearch}>
-            <div className="search-input-wrapper">
-              <Search size={16} className="search-icon" />
-              <input type="text" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Enter Ticker (e.g. MSFT)" />
-            </div>
-            <button type="submit" disabled={loading}>{loading ? "Analyzing..." : "Analyze"}</button>
-          </form>
+          
+          {/* SEARCH BAR WITH DROPDOWN */}
+          <div className="search-container">
+            <form className="search-controls" onSubmit={handleSearch}>
+              <div className="search-input-wrapper">
+                <Search size={16} className="search-icon" />
+                <input 
+                  type="text" 
+                  value={searchInput} 
+                  onChange={(e) => setSearchInput(e.target.value)} 
+                  onFocus={() => setIsDropdownOpen(true)}
+                  onBlur={() => setIsDropdownOpen(false)}
+                  placeholder="Enter Ticker (e.g. MSFT)" 
+                />
+              </div>
+              <button type="submit" disabled={loading}>{loading ? "Analyzing..." : "Analyze"}</button>
+            </form>
+
+            {/* FLOATING DROPDOWN LIST */}
+            {isDropdownOpen && (
+              <div className="stock-dropdown">
+                <div className="dropdown-header">Trending Markets</div>
+                {popularStocks.map((stock) => (
+                  <div 
+                    key={stock.symbol} 
+                    className="dropdown-item"
+                    // We use onMouseDown instead of onClick because onMouseDown fires before the input loses focus (onBlur)
+                    onMouseDown={() => {
+                      setSearchInput(stock.symbol);
+                      setTicker(stock.symbol);
+                    }}
+                  >
+                    <div className="stock-info">
+                      <strong>{stock.symbol}</strong>
+                      <span className="stock-name">{stock.name}</span>
+                    </div>
+                    <div className={`stock-trend ${stock.trend === 'up' ? 'trend-up' : 'trend-down'}`}>
+                      {stock.trend === 'up' ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                      {stock.change}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {error && (
@@ -155,7 +212,6 @@ export default function Dashboard() {
             </div>
           </div>
           
-          {/* Enhanced Right Column: AI Panel + Key Stats */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
             <div className="dashboard-card ai-panel">
               <p className="metric-title">AI Intelligence Report</p>
@@ -166,7 +222,6 @@ export default function Dashboard() {
               <p style={{ color: "#64748b", fontSize: "14px", lineHeight: "1.6", margin: 0 }}>The structural layout is complete. Data pipeline to Python backend is verified and stable. Currently tracking real-time volatility for <strong>{ticker}</strong>.</p>
             </div>
 
-            {/* NEW FEATURE: Key Statistics Grid */}
             <div className="dashboard-card">
               <p className="metric-title" style={{ marginBottom: '15px' }}>Key Statistics</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
